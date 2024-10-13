@@ -1,7 +1,10 @@
 package km;
 
-import km.algorithms.TSPBruteForce;
+import km.algorithms.BruteForce;
+import km.algorithms.NearestNeighbour;
 import km.data.FileLoader;
+import km.model.TSPProblem;
+import km.utils.TimeMeasurer;
 
 import java.io.IOException;
 
@@ -14,11 +17,13 @@ public class Main {
             TSPProblem problem = new TSPProblem(distanceMatrix);
 
             // Przegląd zupełny
-            TSPBruteForce bruteForce = new TSPBruteForce(problem);
-            long startTime = System.nanoTime();
-            bruteForce.solve();
-            long endTime = System.nanoTime();
-            System.out.println("Brute Force Time: " + (endTime - startTime) + " ns");
+            BruteForce bruteForce = new BruteForce(problem);
+            long time = TimeMeasurer.measureAlgorithmTime(bruteForce);
+            System.out.println("Brute Force Time: " + time + " ns");
+
+            NearestNeighbour nearestNeighbour = new NearestNeighbour(problem);
+            long nearestNeighbourTime = TimeMeasurer.measureAlgorithmTime(nearestNeighbour);
+            System.out.println("Nearest Neighbour Time: " + nearestNeighbourTime + " ns");
 
         } catch (IOException e) {
             e.printStackTrace();

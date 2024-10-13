@@ -1,18 +1,19 @@
 package km.algorithms;
 
-import km.TSPProblem;
+import km.model.TSPProblem;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TSPBruteForce {
+public class BruteForce extends Algorithm {
     private final TSPProblem problem;
 
-    public TSPBruteForce(TSPProblem problem) {
+    public BruteForce(TSPProblem problem) {
         this.problem = problem;
     }
 
+    @Override
     public List<Integer> solve() {
         List<Integer> cities = new ArrayList<>();
         for (int i = 0; i < problem.getCitiesCount(); i++) {
@@ -22,7 +23,7 @@ public class TSPBruteForce {
         int bestDistance = Integer.MAX_VALUE;
 
         while (nextPermutation(cities)) {
-            int currentDistance = calculateTotalDistance(cities);
+            int currentDistance = calculateTotalDistance(cities, problem);
             if (currentDistance < bestDistance) {
                 bestDistance = currentDistance;
                 bestPath = new ArrayList<>(cities);
@@ -31,15 +32,6 @@ public class TSPBruteForce {
 
         System.out.println("Best distance (Brute Force): " + bestDistance);
         return bestPath;
-    }
-
-    private int calculateTotalDistance(List<Integer> cities) {
-        int distance = 0;
-        for (int i = 0; i < cities.size() - 1; i++) {
-            distance += problem.getDistance(cities.get(i), cities.get(i + 1));
-        }
-        distance += problem.getDistance(cities.get(cities.size() - 1), cities.get(0));
-        return distance;
     }
 
     private boolean nextPermutation(List<Integer> cities) {

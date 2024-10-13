@@ -1,4 +1,4 @@
-package km;
+package km.model;
 
 public class TSPProblem {
     private final int[][] distanceMatrix;
