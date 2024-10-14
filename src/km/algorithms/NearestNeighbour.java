@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NearestNeighbour extends Algorithm {
-    private TSPProblem problem;
+    private final TSPProblem problem;
 
     public NearestNeighbour(TSPProblem problem) {
         this.problem = problem;
