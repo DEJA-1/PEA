@@ -6,12 +6,10 @@ import java.io.IOException;
 public class CSVWriter {
     private FileWriter writer;
 
-    // Konstruktor inicjalizujący pustą instancję
     public CSVWriter() {
         this.writer = null;
     }
 
-    // Ustawienie nowego pliku wyjściowego
     public void setFilePath(String filePath) throws IOException {
         if (writer != null) {
             writer.close();
