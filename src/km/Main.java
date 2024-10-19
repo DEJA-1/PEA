@@ -8,6 +8,7 @@ import km.data.CSVWriter;
 import km.data.FileLoader;
 import km.model.TSPProblem;
 import km.ui.Display;
+import km.ui.ProgressIndicator;
 import km.utils.MemoryMeasurer;
 import km.utils.TimeMeasurer;
 
@@ -21,32 +22,29 @@ public class Main {
             int[][] distanceMatrix = FileLoader.loadMatrixFromFile(rootPath + matrixFileName);
             TSPProblem problem = new TSPProblem(distanceMatrix);
             int executions = 10;
-
+            int numberOfAlgorithms = 3;
+            int totalIterations = numberOfAlgorithms * executions;
+            ProgressIndicator progressIndicator = new ProgressIndicator(totalIterations);
             long initialMemory = MemoryMeasurer.getUsedMemory();
-
-            // Tworzymy jedną instancję CSVWriter
             CSVWriter csvWriter = new CSVWriter();
+            StringBuilder summaryResults = new StringBuilder();
 
-            // Random Algorithm
             csvWriter.setFilePath(rootPath + "random_algorithm_times.csv");
             Random random = new Random(problem);
-            runAlgorithmWithWarmup("Random", random, executions, csvWriter, distanceMatrix);
-            Display.displayMemoryUsage(initialMemory, "Random");
+            summaryResults.append(runAlgorithmWithWarmup("Random", random, executions, csvWriter, distanceMatrix, progressIndicator));
 
-            // Brute Force Algorithm
             csvWriter.setFilePath(rootPath + "bruteforce_algorithm_times.csv");
             BruteForce bruteForce = new BruteForce(problem);
-            runAlgorithmWithWarmup("Brute Force", bruteForce, executions, csvWriter, distanceMatrix);
-            Display.displayMemoryUsage(initialMemory, "Brute Force");
+            summaryResults.append(runAlgorithmWithWarmup("Brute Force", bruteForce, executions, csvWriter, distanceMatrix, progressIndicator));
 
-            // Nearest Neighbour Algorithm
             csvWriter.setFilePath(rootPath + "nearestneighbour_algorithm_times.csv");
             NearestNeighbour nearestNeighbour = new NearestNeighbour(problem);
-            runAlgorithmWithWarmup("Nearest Neighbour", nearestNeighbour, executions, csvWriter, distanceMatrix);
-            Display.displayMemoryUsage(initialMemory, "Nearest Neighbour");
+            summaryResults.append(runAlgorithmWithWarmup("Nearest Neighbour", nearestNeighbour, executions, csvWriter, distanceMatrix, progressIndicator));
 
             csvWriter.close();
 
+            Display.printSeparator();
+            Display.printSummary(summaryResults.toString());
             Display.displayTotalMemoryUsage(initialMemory);
 
         } catch (IOException e) {
@@ -54,27 +52,36 @@ public class Main {
         }
     }
 
-    public static void runAlgorithmWithWarmup(String algorithmName, Algorithm algorithm, int executions, CSVWriter csvWriter, int[][] matrix) throws IOException {
-        algorithm.solve(); /*
-            Pierwsze wywołanie zawsze trwa o wiele dłużej niż reszta ze względu na czynniki Javowe.
-            Aby nie zakłamywać wyników, pierwszego wywołania nie uwzględniamy w pomiarach.
-         */
+    public static String runAlgorithmWithWarmup(String algorithmName, Algorithm algorithm, int executions, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator) throws IOException {
+        StringBuilder algorithmResults = new StringBuilder();
+
+        algorithm.solve();
 
         long totalTime = 0;
         int problemSize = matrix.length;
+        long initialMemory = MemoryMeasurer.getUsedMemory();
 
         for (int i = 0; i < executions; i++) {
-            Display.displayIterationProgress(algorithmName, i + 1, executions);
+            Display.printIterationSeparator(algorithmName, i + 1);
 
             long timeNano = TimeMeasurer.measureAlgorithmTime(algorithm);
-            Display.displayExecutionTime(timeNano);
-
             totalTime += timeNano;
 
+            Display.displayExecutionTime(timeNano);
+
             csvWriter.writeRecord(problemSize, matrix, algorithmName, timeNano, timeNano / 1_000_000);
+
+            progressIndicator.updateProgress();
         }
 
         long averageTimeNano = totalTime / executions;
-        Display.displayAverageExecutionTime(algorithmName, averageTimeNano);
+        long memoryUsed = MemoryMeasurer.getUsedMemory() - initialMemory;
+
+        algorithmResults.append(algorithmName)
+                .append(" - Średni czas wykonania: ").append(averageTimeNano).append(" ns (")
+                .append(averageTimeNano / 1_000_000).append(" ms)\n")
+                .append(algorithmName).append(" - Całkowita zajętość pamięci: ").append(memoryUsed).append(" B\n");
+
+        return algorithmResults.toString();
     }
 }

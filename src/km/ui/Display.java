@@ -1,13 +1,12 @@
 package km.ui;
 
 import km.utils.MemoryMeasurer;
-import km.utils.ProgressIndicator;
 
 public class Display {
 
-    public static void displayMemoryUsage(long initialMemory, String algorithmName) {
-        long memoryUsed = MemoryMeasurer.getUsedMemory() - initialMemory;
-        System.out.println(algorithmName + " - Całkowita zajętość pamięci: " + memoryUsed + " B");
+    public static void displayExecutionTime(long timeNano) {
+        long timeMilli = timeNano / 1_000_000;
+        System.out.println("Czas wykonania: " + timeNano + " ns (" + timeMilli + " ms)");
     }
 
     public static void displayTotalMemoryUsage(long initialMemory) {
@@ -16,21 +15,16 @@ public class Display {
         System.out.println("\nCałkowita zajętość pamięci po uruchomieniu wszystkich algorytmów: " + totalMemoryUsed + " B");
     }
 
-    public static void displayAverageExecutionTime(String algorithmName, long averageTimeNano) {
-        long averageTimeMilli = averageTimeNano / 1_000_000;
-        System.out.println("\n" + algorithmName + " - Średni czas wykonania: " + averageTimeNano + " ns (" + averageTimeMilli + " ms)");
-    }
-
-    public static void displayIterationProgress(String algorithmName, int iteration, int totalExecutions) {
+    public static void printIterationSeparator(String algorithmName, int iteration) {
         System.out.println("\n============================");
         System.out.println(algorithmName + " - Iteracja " + iteration);
-        new ProgressIndicator(true).showProgress(iteration, totalExecutions); // Wskaźnik postępu
-        System.out.println("============================");
     }
 
-    public static void displayExecutionTime(long timeNano) {
-        long timeMilli = timeNano / 1_000_000;
-        System.out.println("Czas wykonania: " + timeNano + " ns (" + timeMilli + " ms)");
+    public static void printSeparator() {
+        System.out.println("\n==================== PODSUMOWANIE ====================\n");
+    }
+
+    public static void printSummary(String summary) {
+        System.out.println(summary);
     }
 }
-
