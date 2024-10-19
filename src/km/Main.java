@@ -5,7 +5,6 @@ import km.algorithms.BruteForce;
 import km.algorithms.NearestNeighbour;
 import km.algorithms.Random;
 import km.data.CSVWriter;
-import km.data.FileLoader;
 import km.model.TSPProblem;
 import km.ui.Display;
 import km.ui.ProgressIndicator;
@@ -18,28 +17,33 @@ public class Main {
     public static void main(String[] args) {
         try {
             String rootPath = "C:\\Users\\Krzysiek\\Downloads\\";
-            String matrixFileName = "matrix_6x6.txt";
-            int[][] distanceMatrix = FileLoader.loadMatrixFromFile(rootPath + matrixFileName);
-            TSPProblem problem = new TSPProblem(distanceMatrix);
+            int problemSize = 6;  // Ustawiamy rozmiar problemu (liczba miast)
             int executions = 10;
             int numberOfAlgorithms = 3;
             int totalIterations = numberOfAlgorithms * executions;
+
             ProgressIndicator progressIndicator = new ProgressIndicator(totalIterations);
             long initialMemory = MemoryMeasurer.getUsedMemory();
             CSVWriter csvWriter = new CSVWriter();
             StringBuilder summaryResults = new StringBuilder();
 
+            // Generowanie losowej macierzy dla problemu TSP o zadanym rozmiarze
+            TSPProblem problem = TSPProblem.generateRandomProblem(problemSize);
+
+            // Random Algorithm
             csvWriter.setFilePath(rootPath + "random_algorithm_times.csv");
             Random random = new Random(problem);
-            summaryResults.append(runAlgorithmWithWarmup("Random", random, executions, csvWriter, distanceMatrix, progressIndicator));
+            summaryResults.append(runAlgorithmWithWarmup("Random", random, executions, csvWriter, problem.getDistanceMatrix(), progressIndicator));
 
+            // Brute Force Algorithm
             csvWriter.setFilePath(rootPath + "bruteforce_algorithm_times.csv");
             BruteForce bruteForce = new BruteForce(problem);
-            summaryResults.append(runAlgorithmWithWarmup("Brute Force", bruteForce, executions, csvWriter, distanceMatrix, progressIndicator));
+            summaryResults.append(runAlgorithmWithWarmup("Brute Force", bruteForce, executions, csvWriter, problem.getDistanceMatrix(), progressIndicator));
 
+            // Nearest Neighbour Algorithm
             csvWriter.setFilePath(rootPath + "nearestneighbour_algorithm_times.csv");
             NearestNeighbour nearestNeighbour = new NearestNeighbour(problem);
-            summaryResults.append(runAlgorithmWithWarmup("Nearest Neighbour", nearestNeighbour, executions, csvWriter, distanceMatrix, progressIndicator));
+            summaryResults.append(runAlgorithmWithWarmup("Nearest Neighbour", nearestNeighbour, executions, csvWriter, problem.getDistanceMatrix(), progressIndicator));
 
             csvWriter.close();
 
