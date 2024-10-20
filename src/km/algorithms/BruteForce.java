@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static km.Main.calculateTotalDistance;
+
 public class BruteForce extends Algorithm {
     private final TSPProblem problem;
 
@@ -30,7 +32,6 @@ public class BruteForce extends Algorithm {
             }
         }
 
-        System.out.println("Best distance (Brute Force): " + bestDistance);
         return bestPath;
     }
 

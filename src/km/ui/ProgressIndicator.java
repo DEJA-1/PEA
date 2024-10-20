@@ -6,13 +6,16 @@ public class ProgressIndicator {
 
     public ProgressIndicator(int totalIterations) {
         this.totalIterations = totalIterations;
-        this.currentIteration = 0;
+        this.currentIteration = 1;
     }
 
     public void updateProgress() {
         currentIteration++;
-        double progressPercentage = (double) currentIteration / totalIterations * 100;
+    }
 
-        System.out.printf("Progress: %.2f%%\n", progressPercentage);
+    public double getProgress() {
+        return ((double) currentIteration / totalIterations) * 100;
     }
 }
+
+

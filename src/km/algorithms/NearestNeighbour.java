@@ -35,7 +35,6 @@ public class NearestNeighbour extends Algorithm {
             visited[currentCity] = true;
         }
 
-        System.out.println("Total Distance (Nearest Neighbour): " + calculateTotalDistance(path, problem));
         return path;
     }
 }

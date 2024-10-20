@@ -21,4 +21,12 @@ public class ConfigLoader {
     public int getIntProperty(String key) {
         return Integer.parseInt(properties.getProperty(key));
     }
+
+    public boolean getBooleanProperty(String key) {
+        String value = properties.getProperty(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Property " + key + " is not found.");
+        }
+        return Boolean.parseBoolean(value.trim().toLowerCase());
+    }
 }
