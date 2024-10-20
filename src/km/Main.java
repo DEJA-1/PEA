@@ -81,7 +81,10 @@ public class Main {
 
     public static String runAlgorithmWithWarmup(String algorithmName, Algorithm algorithm, int executions, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator) throws IOException {
         StringBuilder algorithmResults = new StringBuilder();
-        algorithm.solve();
+        algorithm.solve(); /*
+            Pierwsze wywołanie zawsze trwa o wiele dłużej niż reszta ze względu na czynniki Javowe.
+            Aby nie zakłamywać wyników, pierwszego wywołania nie uwzględniamy w pomiarach.
+         */
 
         long totalTime = 0;
         long initialMemory = MemoryMeasurer.getUsedMemory();
