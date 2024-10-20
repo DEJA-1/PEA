@@ -28,7 +28,6 @@ public class Main {
             int problemSize = configLoader.getIntProperty("problemSize");
             int executions = configLoader.getIntProperty("executions");
             int useInputFile = configLoader.getIntProperty("useInputFile");
-            int algorithmToRun = configLoader.getIntProperty("algorithmToRun");
             boolean showProgress = configLoader.getBooleanProperty("showProgress");
 
             String bruteForceOutputFile = configLoader.getProperty("bruteForceOutputFile");
@@ -39,49 +38,40 @@ public class Main {
             String matrix8x8File = configLoader.getProperty("matrix8x8File");
             String matrix11x11File = configLoader.getProperty("matrix11x11File");
 
-            TSPProblem problem = initializeProblem(useInputFile, problemSize, matrix6x6File, matrix8x8File, matrix11x11File);
-
-            int totalIterations = 3 * executions; // Dostosujemy do algorytmu, który jest uruchamiany
-            ProgressIndicator progressIndicator = new ProgressIndicator(totalIterations);
+            ProgressIndicator progressIndicator = new ProgressIndicator(executions * 3); // 3 algorytmy
 
             long initialMemory = MemoryMeasurer.getUsedMemory();
-            CSVWriter csvWriter = new CSVWriter();
+            CSVWriter bruteForceWriter = new CSVWriter();
+            CSVWriter nearestNeighbourWriter = new CSVWriter();
+            CSVWriter randomWriter = new CSVWriter();
             StringBuilder summaryResults = new StringBuilder();
 
-            // Wybór algorytmu na podstawie konfiguracji
-            switch (algorithmToRun) {
-                case 0:  // Uruchomienie wszystkich algorytmów
-                    totalIterations = 3 * executions;
-                    progressIndicator = new ProgressIndicator(totalIterations);
+            bruteForceWriter.setFilePath(bruteForceOutputFile);
+            nearestNeighbourWriter.setFilePath(nearestNeighbourOutputFile);
+            randomWriter.setFilePath(randomOutputFile);
 
-                    runAndAppendResult("Brute Force", new BruteForce(problem), executions, csvWriter, bruteForceOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    runAndAppendResult("Nearest Neighbour", new NearestNeighbour(problem), executions, csvWriter, nearestNeighbourOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    runAndAppendResult("Random", new Random(problem), executions, csvWriter, randomOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    break;
-                case 1:
-                    totalIterations = executions;
-                    progressIndicator = new ProgressIndicator(totalIterations);
+            if (useInputFile == 0) {
+                for (int i = 0; i < executions; i++) {
+                    // Losowanie nowej instancji problemu po każdym cyklu dla wszystkich algorytmów
+                    TSPProblem problem = TSPProblem.generateRandomProblem(problemSize);
 
-                    runAndAppendResult("Brute Force", new BruteForce(problem), executions, csvWriter, bruteForceOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    break;
-                case 2:
-                    totalIterations = executions;
-                    progressIndicator = new ProgressIndicator(totalIterations);
-
-                    runAndAppendResult("Nearest Neighbour", new NearestNeighbour(problem), executions, csvWriter, nearestNeighbourOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    break;
-                case 3:
-                    totalIterations = executions;
-                    progressIndicator = new ProgressIndicator(totalIterations);
-
-                    runAndAppendResult("Random", new Random(problem), executions, csvWriter, randomOutputFile, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress);
-                    break;
-                default:
-                    System.out.println("Nieznany algorytm w pliku konfiguracyjnym.");
-                    return;
+                    runAndAppendResult("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                    runAndAppendResult("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                    runAndAppendResult("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                }
+            } else {
+                // Gdy korzystamy z macierzy z pliku - jedna instancja dla wszystkich algorytmów
+                TSPProblem problem = initializeProblem(useInputFile, problemSize, matrix6x6File, matrix8x8File, matrix11x11File);
+                for (int i = 0; i < executions; i++) {
+                    runAndAppendResult("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                    runAndAppendResult("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                    runAndAppendResult("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), summaryResults, progressIndicator, problem, showProgress, i + 1);
+                }
             }
 
-            csvWriter.close();
+            bruteForceWriter.close();
+            nearestNeighbourWriter.close();
+            randomWriter.close();
 
             Display.printSummarySeparator();
             Display.printSummary(summaryResults.toString());
@@ -105,40 +95,34 @@ public class Main {
         }
     }
 
-    public static void runAndAppendResult(String algorithmName, Algorithm algorithm, int executions, CSVWriter csvWriter, String outputFilePath, int[][] matrix, StringBuilder summaryResults, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress) throws IOException {
-        csvWriter.setFilePath(outputFilePath);
-        String result = runAlgorithmWithWarmup(algorithmName, algorithm, executions, csvWriter, matrix, progressIndicator, problem, showProgress);
+    public static void runAndAppendResult(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, StringBuilder summaryResults, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
+        String result = runAlgorithmWithWarmup(algorithmName, algorithm, csvWriter, matrix, progressIndicator, problem, showProgress, iteration);
         summaryResults.append(result);
     }
 
-    public static String runAlgorithmWithWarmup(String algorithmName, Algorithm algorithm, int executions, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress) throws IOException {
+    public static String runAlgorithmWithWarmup(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
         StringBuilder algorithmResults = new StringBuilder();
-
-        algorithm.solve();
 
         long totalTime = 0;
         long initialMemory = MemoryMeasurer.getUsedMemory();
 
-        for (int i = 0; i < executions; i++) {
-            Display.printIterationSeparator(algorithmName, i + 1, showProgress, progressIndicator.getProgress());
+        Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
 
-            List<Integer> solution = algorithm.solve();
+        List<Integer> solution = algorithm.solve();
+        int totalDistance = calculateTotalDistance(solution, problem);
+        long timeNano = TimeMeasurer.measureAlgorithmTime(algorithm);
+        totalTime += timeNano;
 
-            int totalDistance = calculateTotalDistance(solution, problem);
+        Display.displayRoute(solution);
+        Display.displayDistance(totalDistance);
+        Display.displayExecutionTime(timeNano);
 
-            long timeNano = TimeMeasurer.measureAlgorithmTime(algorithm);
-            totalTime += timeNano;
+        // Zapis rekordu do pliku CSV
+        csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
 
-            Display.displayRoute(solution);
-            Display.displayDistance(totalDistance);
-            Display.displayExecutionTime(timeNano);
+        progressIndicator.updateProgress();
 
-            csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
-
-            progressIndicator.updateProgress();
-        }
-
-        long averageTimeNano = totalTime / executions;
+        long averageTimeNano = totalTime;
         long memoryUsed = MemoryMeasurer.getUsedMemory() - initialMemory;
 
         algorithmResults.append(algorithmName)
