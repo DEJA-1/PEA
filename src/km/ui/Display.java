@@ -55,6 +55,11 @@ public class Display {
         System.out.println(summary);
     }
 
+    public static void printProblemSize(int size) {
+        System.out.println("Rozmiar problemu: " + size);
+    }
+
+
     public static void displayTotalMemoryUsage(long initialMemory) {
         long finalMemory = MemoryMeasurer.getUsedMemory();
         long totalMemoryUsed = finalMemory - initialMemory;

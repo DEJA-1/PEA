@@ -16,13 +16,13 @@ public class TSPProblem {
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 if (i == j) {
-                    matrix[i][j] = -1; // Brak kosztu podróży do tego samego miasta
+                    matrix[i][j] = -1;
                 } else {
-                    matrix[i][j] = random.nextInt(100) + 1; // Koszt losowy między 1 a 100
+                    matrix[i][j] = random.nextInt(100) + 1;
                 }
             }
         }
-        return new TSPProblem(matrix); // Zwraca nowy obiekt TSPProblem z wygenerowaną macierzą
+        return new TSPProblem(matrix);
     }
 
     public int getCitiesCount() {
