@@ -6,7 +6,7 @@ public class ProgressIndicator {
 
     public ProgressIndicator(int totalIterations) {
         this.totalIterations = totalIterations;
-        this.currentIteration = 0;
+        this.currentIteration = 1;
     }
 
     public void updateProgress() {

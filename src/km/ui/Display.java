@@ -56,7 +56,7 @@ public class Display {
     }
 
     public static void printProblemSize(int size) {
-        System.out.println("Rozmiar problemu: " + size);
+        System.out.println("Rozmiar instancji: " + size);
     }
 
 

@@ -40,7 +40,6 @@ public class Main {
 
             ProgressIndicator progressIndicator = new ProgressIndicator(executions * 3); // 3 algorytmy
 
-            long initialMemory = MemoryMeasurer.getUsedMemory();
             CSVWriter bruteForceWriter = new CSVWriter();
             CSVWriter nearestNeighbourWriter = new CSVWriter();
             CSVWriter randomWriter = new CSVWriter();
@@ -52,9 +51,11 @@ public class Main {
             long bruteForceTotalTime = 0;
             long nearestNeighbourTotalTime = 0;
             long randomTotalTime = 0;
+            long initialMemory = MemoryMeasurer.getUsedMemory();
+            int displayProblemSize = 0;
 
             if (useInputFile == 0) {
-                Display.printProblemSize(problemSize);
+                displayProblemSize = problemSize;
                 for (int i = 0; i < executions; i++) {
                     TSPProblem problem = TSPProblem.generateRandomProblem(problemSize);
                     bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
@@ -63,7 +64,7 @@ public class Main {
                 }
             } else {
                 TSPProblem problem = initializeProblem(useInputFile, problemSize, matrix6x6File, matrix8x8File, matrix11x11File);
-                Display.printProblemSize(problem.getCitiesCount());
+                displayProblemSize = problem.getCitiesCount();
                 for (int i = 0; i < executions; i++) {
                     bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
                     nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
@@ -76,12 +77,11 @@ public class Main {
             randomWriter.close();
 
             Display.printSummarySeparator();
-            Display.printSummary("Brute Force - Średni czas wykonania: " + (bruteForceTotalTime / (executions)) + " ns (" + (bruteForceTotalTime / (executions) / 1_000_000) + " ms)");
-            Display.printSummary("Brute Force - Całkowita zajętość pamięci: " + (MemoryMeasurer.getUsedMemory() - initialMemory) + " B");
-            Display.printSummary("Nearest Neighbour - Średni czas wykonania: " + (nearestNeighbourTotalTime / (executions)) + " ns (" + (nearestNeighbourTotalTime / (executions) / 1_000_000) + " ms)");
-            Display.printSummary("Nearest Neighbour - Całkowita zajętość pamięci: " + (MemoryMeasurer.getUsedMemory() - initialMemory) + " B");
-            Display.printSummary("Random - Średni czas wykonania: " + (randomTotalTime / (executions)) + " ns (" + (randomTotalTime / (executions) / 1_000_000) + " ms)");
-            Display.printSummary("Random - Całkowita zajętość pamięci: " + (MemoryMeasurer.getUsedMemory() - initialMemory) + " B");
+
+            Display.printProblemSize(displayProblemSize);
+            Display.printSummary("Brute Force - Średni czas wykonania: " + (bruteForceTotalTime / executions) + " ns (" + (bruteForceTotalTime / executions / 1_000_000) + " ms)");
+            Display.printSummary("Nearest Neighbour - Średni czas wykonania: " + (nearestNeighbourTotalTime / executions) + " ns (" + (nearestNeighbourTotalTime / executions / 1_000_000) + " ms)");
+            Display.printSummary("Random - Średni czas wykonania: " + (randomTotalTime / executions) + " ns (" + (randomTotalTime / executions / 1_000_000) + " ms)");
             Display.displayTotalMemoryUsage(initialMemory);
 
         } catch (IOException e) {
@@ -103,8 +103,6 @@ public class Main {
     }
 
     public static long runAlgorithm(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
-        long initialMemory = MemoryMeasurer.getUsedMemory();
-
         Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
 
         List<Integer> solution = algorithm.solve();

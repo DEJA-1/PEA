@@ -8,19 +8,4 @@ public class MemoryMeasurer {
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
     }
-
-    public static long measureMemoryUsage(Algorithm algorithm) {
-        long beforeMemory = getUsedMemory();
-        algorithm.solve();
-        long afterMemory = getUsedMemory();
-        return afterMemory - beforeMemory;
-    }
-
-    public static long measureTotalMemoryUsage(Algorithm algorithm, int iterations) {
-        long totalMemoryUsed = 0;
-        for (int i = 0; i < iterations; i++) {
-            totalMemoryUsed += measureMemoryUsage(algorithm);
-        }
-        return totalMemoryUsed;
-    }
 }
