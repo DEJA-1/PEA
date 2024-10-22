@@ -22,22 +22,22 @@ public class Random extends Algorithm {
         List<Integer> bestPath = null;
         int bestDistance = Integer.MAX_VALUE;
         int citiesCount = problem.getCitiesCount();
-        int numIterations = citiesCount * citiesCount;
+        int numIterations = citiesCount * citiesCount; // Ustawiona liczba iteracji która pomaga uzyskać bardziej optymalny wynik
 
         for (int iter = 0; iter < numIterations; iter++) {
             List<Integer> cities = new ArrayList<>();
             for (int i = 0; i < citiesCount; i++) {
                 cities.add(i);
-            }
+            } // Tworzymy tablice miast
 
-            Collections.shuffle(cities, random);
+            Collections.shuffle(cities, random); // Wybieramy losową permutacje tablicy
 
-            int totalDistance = calculateTotalDistance(cities, problem);
+            int totalDistance = calculateTotalDistance(cities, problem); // Obliczamy trasę dla losowej permutacji
 
             if (totalDistance < bestDistance) {
                 bestDistance = totalDistance;
                 bestPath = new ArrayList<>(cities);
-            }
+            } // Jeżeli znajdziemy permutacje o lepszej trasie, aktualizujemy bestDistance i ścieżkę
         }
 
         return bestPath;

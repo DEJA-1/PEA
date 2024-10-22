@@ -17,7 +17,7 @@ public class Display {
 
     public static void displayProgressBar(double progressPercentage) {
         int totalBarLength = 20;
-        int filledLength = (int) (progressPercentage / 5);
+        int filledLength = (int) (progressPercentage / 5); // co 5% uzupełniamy pasek
 
         StringBuilder progressBar = new StringBuilder("\n[");
         for (int i = 0; i < filledLength; i++) {

@@ -14,6 +14,6 @@ public class ProgressIndicator {
     }
 
     public double getProgress() {
-        return ((double) currentIteration / totalIterations) * 100;
+        return ((double) currentIteration / totalIterations) * 100; // Obliczmay stan progressu
     }
 }

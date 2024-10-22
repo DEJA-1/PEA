@@ -21,7 +21,7 @@ public class TSPProblem {
                     matrix[i][j] = random.nextInt(100) + 1;
                 }
             }
-        }
+        } // Generowanie macierzy asymetrycznej
         return new TSPProblem(matrix);
     }
 

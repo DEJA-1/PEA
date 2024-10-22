@@ -15,7 +15,7 @@ public class FileLoader {
             for (int j = 0; j < citiesCount; j++) {
                 matrix[i][j] = Integer.parseInt(line[j]);
             }
-        }
+        } // Wczytywanie danych z pliku, parsowanie tekstu na liczbę (typ Int)
         reader.close();
         return matrix;
     }
