@@ -16,12 +16,4 @@ public class ProgressIndicator {
     public double getProgress() {
         return ((double) currentIteration / totalIterations) * 100;
     }
-
-    public int getTotalIterations() {
-        return totalIterations;
-    }
-
-    public int getCurrentIteration() {
-        return currentIteration;
-    }
 }

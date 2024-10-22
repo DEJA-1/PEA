@@ -34,11 +34,9 @@ public class Main {
             String randomOutputFile = configLoader.getProperty("randomOutputFile");
             String nearestNeighbourOutputFile = configLoader.getProperty("nearestNeighbourOutputFile");
 
-            String matrix6x6File = configLoader.getProperty("matrix6x6File");
-            String matrix8x8File = configLoader.getProperty("matrix8x8File");
-            String matrix11x11File = configLoader.getProperty("matrix11x11File");
+            String inputDataFile = configLoader.getProperty("inputData");
 
-            ProgressIndicator progressIndicator = new ProgressIndicator(executions * 3); // 3 algorytmy
+            ProgressIndicator progressIndicator = new ProgressIndicator(executions * 3);
 
             CSVWriter bruteForceWriter = new CSVWriter();
             CSVWriter nearestNeighbourWriter = new CSVWriter();
@@ -63,7 +61,7 @@ public class Main {
                     randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
                 }
             } else {
-                TSPProblem problem = initializeProblem(useInputFile, problemSize, matrix6x6File, matrix8x8File, matrix11x11File);
+                TSPProblem problem = initializeProblemFromFile(inputDataFile);
                 displayProblemSize = problem.getCitiesCount();
                 for (int i = 0; i < executions; i++) {
                     bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
@@ -89,17 +87,8 @@ public class Main {
         }
     }
 
-    public static TSPProblem initializeProblem(int useInputFile, int problemSize, String matrix6x6File, String matrix8x8File, String matrix11x11File) throws IOException {
-        switch (useInputFile) {
-            case 1:
-                return new TSPProblem(FileLoader.loadMatrixFromFile(matrix6x6File));
-            case 2:
-                return new TSPProblem(FileLoader.loadMatrixFromFile(matrix8x8File));
-            case 3:
-                return new TSPProblem(FileLoader.loadMatrixFromFile(matrix11x11File));
-            default:
-                return TSPProblem.generateRandomProblem(problemSize);
-        }
+    public static TSPProblem initializeProblemFromFile(String inputDataFile) throws IOException {
+        return new TSPProblem(FileLoader.loadMatrixFromFile(inputDataFile));
     }
 
     public static long runAlgorithm(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
