@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="PEA:jar5">
+    <output-path>$PROJECT_DIR$/out/artifacts/PEA_jar5</output-path>
+    <root id="root">
+      <element id="archive" name="PEA.jar">
+        <element id="module-output" name="PEA" />
+      </element>
+      <element id="library" level="project" name="KotlinJavaRuntime" />
+    </root>
+  </artifact>
+</component>
