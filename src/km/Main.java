@@ -1,11 +1,11 @@
 package km;
 
+import km.data.ConfigLoader;
 import km.algorithms.Algorithm;
 import km.algorithms.BruteForce;
 import km.algorithms.NearestNeighbour;
 import km.algorithms.Random;
 import km.data.CSVWriter;
-import km.data.ConfigLoader;
 import km.data.FileLoader;
 import km.model.TSPProblem;
 import km.ui.Display;
@@ -15,17 +15,28 @@ import km.utils.TimeMeasurer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ConfigLoader configLoader = null;
+
+        // Pobranie ścieżki pliku konfiguracyjnego
+        while (configLoader == null) {
+            System.out.println("Wprowadź ścieżkę pliku konfiguracyjnego: ");
+            String configFilePath = scanner.nextLine();
+
+            try {
+                // Inicjalizacja Config Loadera
+                configLoader = new ConfigLoader(configFilePath);
+            } catch (IOException e) {
+                // Jeśli ścieżka jest niepoprawna, wyświetl komunikat
+                System.out.println("Błąd: Nieprawidłowa ścieżka pliku konfiguracyjnego lub plik nie istnieje. Spróbuj ponownie.");
+            }
+        }
+
         try {
-            // Inicjalizacja Config Loadera
-            String rootPath = "C:\\Users\\Krzysiek\\Downloads\\";
-            String configFileName = "PEA_projekt_config.txt";
-            String configFilePath = rootPath + configFileName;
-
-            ConfigLoader configLoader = new ConfigLoader(configFilePath);
-
             // Zczytywanie wartości z configu
             String[] problemSizes = configLoader.getProperty("problemSize").split("\\s+");  // Zmieniamy na listę wartości
             int executions = configLoader.getIntProperty("executions");
@@ -125,15 +136,15 @@ public class Main {
         po każdym wywołaniu oraz zapisujemy rezultat do pliku
     */
     public static long runAlgorithm(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
-//        Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
+        Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
 
         List<Integer> solution = algorithm.solve();
         int totalDistance = calculateTotalDistance(solution, problem);
         long timeNano = TimeMeasurer.measureAlgorithmTime(algorithm);
 
-//        Display.displayRoute(solution);
-//        Display.displayDistance(totalDistance);
-//        Display.displayExecutionTime(timeNano);
+        Display.displayRoute(solution);
+        Display.displayDistance(totalDistance);
+        Display.displayExecutionTime(timeNano);
 
         if (iteration > 5000) {
             csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
