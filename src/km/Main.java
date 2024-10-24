@@ -148,9 +148,9 @@ public class Main {
 
         if (iteration > 5000) {
             csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
+            progressIndicator.updateProgress();
         }
 
-        progressIndicator.updateProgress();
 
         return timeNano;
     }
