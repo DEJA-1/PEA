@@ -59,9 +59,14 @@ public class Main {
             CSVWriter nearestNeighbourWriter = new CSVWriter();
             CSVWriter randomWriter = new CSVWriter();
 
-            bruteForceWriter.setFilePath(bruteForceOutputFile);
-            nearestNeighbourWriter.setFilePath(nearestNeighbourOutputFile);
-            randomWriter.setFilePath(randomOutputFile);
+            try {
+                bruteForceWriter.setFilePath(bruteForceOutputFile);
+                nearestNeighbourWriter.setFilePath(nearestNeighbourOutputFile);
+                randomWriter.setFilePath(randomOutputFile);
+            } catch (IOException e) {
+                System.out.println("Błąd: Nieprawidłowa ścieżka pliku wyjściowego w pliku konfiguracyjnym.");
+                return;
+            }
 
             // Inicjalizacja całkowitego zajętego czasu wywołania n algorytmów w celu obliczenia średniej
             long bruteForceTotalTime = 0;
@@ -98,12 +103,17 @@ public class Main {
                         randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
                     }
                 } else {
-                    TSPProblem problem = initializeProblemFromFile(inputDataFile);
-                    displayProblemSize = problem.getCitiesCount();
-                    for (int i = 0; i < executions; i++) {
-                        bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                        nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                        randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                    try {
+                        TSPProblem problem = initializeProblemFromFile(inputDataFile);
+                        displayProblemSize = problem.getCitiesCount();
+                        for (int i = 0; i < executions; i++) {
+                            bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                            nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                            randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                        }
+                    } catch (IOException e){
+                        System.out.println("Błąd: Nieprawidłowa ścieżka pliku wejściowego w pliku konfiguracyjnym.");
+                        return;
                     }
                 }
 
