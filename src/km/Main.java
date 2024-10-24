@@ -27,10 +27,12 @@ public class Main {
             ConfigLoader configLoader = new ConfigLoader(configFilePath);
 
             // Zczytywanie wartości z configu
-            int problemSize = configLoader.getIntProperty("problemSize");
+            String[] problemSizes = configLoader.getProperty("problemSize").split("\\s+");  // Zmieniamy na listę wartości
             int executions = configLoader.getIntProperty("executions");
             int useInputFile = configLoader.getIntProperty("useInputFile");
             boolean showProgress = configLoader.getBooleanProperty("showProgress");
+            boolean isSymmetric = configLoader.getBooleanProperty("isSymmetric");
+
 
             String bruteForceOutputFile = configLoader.getProperty("bruteForceOutputFile");
             String randomOutputFile = configLoader.getProperty("randomOutputFile");
@@ -38,15 +40,14 @@ public class Main {
 
             String inputDataFile = configLoader.getProperty("inputData");
 
-            // Inicjalizacja paska progresu, bierzemy pod uwagę wykonanie wszystkich algorytmów stąd * 3
-            ProgressIndicator progressIndicator = new ProgressIndicator(executions * 3);
+            // Inicjalizacja paska progresu, bierzemy pod uwagę wykonanie wszystkich algorytmów dla wszystkich rozmiarów problemu
+            ProgressIndicator progressIndicator = new ProgressIndicator(problemSizes.length * executions * 3); // Liczymy wszystkie algorytmy
 
-            // Inicjalizacja CSVWriterów, dla porządku wyniki zapisujemy do 3 osobnych plików
+            // Inicjalizacja CSVWriterów
             CSVWriter bruteForceWriter = new CSVWriter();
             CSVWriter nearestNeighbourWriter = new CSVWriter();
             CSVWriter randomWriter = new CSVWriter();
 
-            // Ustawianie ścieżek plików wynikowych
             bruteForceWriter.setFilePath(bruteForceOutputFile);
             nearestNeighbourWriter.setFilePath(nearestNeighbourOutputFile);
             randomWriter.setFilePath(randomOutputFile);
@@ -56,31 +57,51 @@ public class Main {
             long nearestNeighbourTotalTime = 0;
             long randomTotalTime = 0;
             long initialMemory = MemoryMeasurer.getUsedMemory();
-            int displayProblemSize = 0;
 
-            /*
-                Jeżeli useInputFile = 0, to z każdą iteracją (po wykonaniu wszystkich 3 algorytmów na danej instancji) generujemy
-                nową, losową instancje problemu i wykonujemy algorytmy wraz z pomiarem czasu
+            // Iteracja po wszystkich problemSize
+            for (String problemSizeString : problemSizes) {
+                int problemSize = Integer.parseInt(problemSizeString);
+                int displayProblemSize = problemSize;
+                bruteForceTotalTime = 0;
+                nearestNeighbourTotalTime = 0;
+                randomTotalTime = 0;
 
-                Jeżeli useInputFile = 1, to zczytujemy instancje problemu z plików, i wykonujemy na niej wszystkie 3 algorytmy
-                n razy
-             */
-            if (useInputFile == 0) {
-                displayProblemSize = problemSize;
-                for (int i = 0; i < executions; i++) {
-                    TSPProblem problem = TSPProblem.generateRandomProblem(problemSize);
-                    bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                    nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                    randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                /*
+                    Jeżeli useInputFile = 0, to z każdą iteracją (po wykonaniu wszystkich 3 algorytmów na danej instancji) generujemy
+                    nową, losową instancje problemu i wykonujemy algorytmy wraz z pomiarem czasu
+                 */
+                if (useInputFile == 0) {
+                    /*
+                        Wywołanie "rozgrzewkowych" algorytmów aby uniknąć przekłamania wyników algorytmów
+                    */
+                    for (int j = 0; j < executions; j++) {
+                        TSPProblem problem = TSPProblem.generateRandomProblem(problemSize, isSymmetric);
+                        runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, j + 1);
+                        runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, j + 1);
+                        runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, j + 1);
+                    }
+                    for (int i = 0; i < executions; i++) {
+                        TSPProblem problem = TSPProblem.generateRandomProblem(problemSize, isSymmetric);
+                        bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                        nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                        randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                    }
+                } else {
+                    TSPProblem problem = initializeProblemFromFile(inputDataFile);
+                    displayProblemSize = problem.getCitiesCount();
+                    for (int i = 0; i < executions; i++) {
+                        bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                        nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                        randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
+                    }
                 }
-            } else {
-                TSPProblem problem = initializeProblemFromFile(inputDataFile);
-                displayProblemSize = problem.getCitiesCount();
-                for (int i = 0; i < executions; i++) {
-                    bruteForceTotalTime += runAlgorithm("Brute Force", new BruteForce(problem), bruteForceWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                    nearestNeighbourTotalTime += runAlgorithm("Nearest Neighbour", new NearestNeighbour(problem), nearestNeighbourWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                    randomTotalTime += runAlgorithm("Random", new Random(problem), randomWriter, problem.getDistanceMatrix(), progressIndicator, problem, showProgress, i + 1);
-                }
+
+                // Wyświetlenie podsumowania po każdym problemSize
+                Display.printSummarySeparator();
+                Display.printProblemSize(displayProblemSize);
+                Display.printSummary("Brute Force - Średni czas wykonania: " + (bruteForceTotalTime / executions) + " ns (" + (bruteForceTotalTime / executions / 1_000_000) + " ms)");
+                Display.printSummary("Nearest Neighbour - Średni czas wykonania: " + (nearestNeighbourTotalTime / executions) + " ns (" + (nearestNeighbourTotalTime / executions / 1_000_000) + " ms)");
+                Display.printSummary("Random - Średni czas wykonania: " + (randomTotalTime / executions) + " ns (" + (randomTotalTime / executions / 1_000_000) + " ms)");
             }
 
             // Po zapisaniu wyników zamykamy pliki
@@ -88,12 +109,7 @@ public class Main {
             nearestNeighbourWriter.close();
             randomWriter.close();
 
-            // Wyświetlenie podsumowania
-            Display.printSummarySeparator();
-            Display.printProblemSize(displayProblemSize);
-            Display.printSummary("Brute Force - Średni czas wykonania: " + (bruteForceTotalTime / executions) + " ns (" + (bruteForceTotalTime / executions / 1_000_000) + " ms)");
-            Display.printSummary("Nearest Neighbour - Średni czas wykonania: " + (nearestNeighbourTotalTime / executions) + " ns (" + (nearestNeighbourTotalTime / executions / 1_000_000) + " ms)");
-            Display.printSummary("Random - Średni czas wykonania: " + (randomTotalTime / executions) + " ns (" + (randomTotalTime / executions / 1_000_000) + " ms)");
+            // Wyświetlenie całkowitego zużycia pamięci
             Display.displayTotalMemoryUsage(initialMemory);
 
         } catch (IOException e) {
@@ -109,17 +125,19 @@ public class Main {
         po każdym wywołaniu oraz zapisujemy rezultat do pliku
     */
     public static long runAlgorithm(String algorithmName, Algorithm algorithm, CSVWriter csvWriter, int[][] matrix, ProgressIndicator progressIndicator, TSPProblem problem, boolean showProgress, int iteration) throws IOException {
-        Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
+//        Display.printIterationSeparator(algorithmName, iteration, showProgress, progressIndicator.getProgress());
 
         List<Integer> solution = algorithm.solve();
         int totalDistance = calculateTotalDistance(solution, problem);
         long timeNano = TimeMeasurer.measureAlgorithmTime(algorithm);
 
-        Display.displayRoute(solution);
-        Display.displayDistance(totalDistance);
-        Display.displayExecutionTime(timeNano);
+//        Display.displayRoute(solution);
+//        Display.displayDistance(totalDistance);
+//        Display.displayExecutionTime(timeNano);
 
-        csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
+        if (iteration > 5000) {
+            csvWriter.writeRecord(matrix.length, matrix, algorithmName, timeNano, timeNano / 1_000_000);
+        }
 
         progressIndicator.updateProgress();
 
@@ -133,9 +151,8 @@ public class Main {
         int distance = 0;
         for (int i = 0; i < cities.size() - 1; i++) {
             distance += problem.getDistance(cities.get(i), cities.get(i + 1));
-        } // Iterujemy przez każdy element tablicy obliczając dystans od miasta na indexie i do miasta na indexie i + 1
+        }
         distance += problem.getDistance(cities.get(cities.size() - 1), cities.get(0));
-        // Na samym końcu należy dodać ścieżkę do punktu początkowego
         return distance;
     }
 }

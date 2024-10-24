@@ -9,7 +9,7 @@ public class TSPProblem {
         this.distanceMatrix = distanceMatrix;
     }
 
-    public static TSPProblem generateRandomProblem(int size) {
+    public static TSPProblem generateRandomProblem(int size, boolean isSymmetric) {
         Random random = new Random();
         int[][] matrix = new int[size][size];
 
@@ -18,10 +18,15 @@ public class TSPProblem {
                 if (i == j) {
                     matrix[i][j] = -1;
                 } else {
-                    matrix[i][j] = random.nextInt(100) + 1;
+                    int distance = random.nextInt(100) + 1;
+                    matrix[i][j] = distance;
+
+                    if (isSymmetric) {
+                        matrix[j][i] = distance;
+                    }
                 }
             }
-        } // Generowanie macierzy asymetrycznej
+        }
         return new TSPProblem(matrix);
     }
 
